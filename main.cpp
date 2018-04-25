@@ -118,20 +118,20 @@ int edmondsKarp(struct matrix *matrix, int startNode, std::vector<int> visitedPi
   while(true){
     std::vector<int> flows;
     int flow = BFS(matrix, startNode, visitedPixels, currentPathCapacity, flows);
-    //printf("%d\n", flow);
-    //int i = flows.size()-1;
-    if(flow == 0){
+    printf("%d\n", flow);
+    int i = flows.size()-1;
+    if(){
       break;
     }
     maxFlow+=flow;
     int currentNode = matrix->pixels.size()-1;
     while(currentNode != startNode){
       int previousNode = visitedPixels[currentNode];
-      //printf("%d\n", flow);
-      /*matrix->pixels[currentNode].edges[flows[i]].cf -= flow;
-      matrix->pixels[currentNode].edges[flows[i]].backwardsCF += flow;*/
+      printf("%d\n", flow);
+      matrix->pixels[currentNode].edges[flows[i]].cf -= flow;
+      matrix->pixels[currentNode].edges[flows[i]].backwardsCF += flow;
       currentNode = previousNode;
-      //i--;
+      i--;
     }
   }
   printf("maxflow: %d\n", maxFlow);
