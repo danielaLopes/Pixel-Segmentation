@@ -145,14 +145,25 @@ int edmondsKarp(struct matrix *matrix, int startNode, int* maxFlow) { //returns 
       currentNode = previousNode;
     }
   }
+  int counterWhite = 0;
+  int counterBlack = 0;
+  int weightsSum= 0;
   for(size_t a=1; a<matrix->visitedPixels.size()-1;a++){
     if (matrix->visitedPixels[a] != -1){
       matrix->pixels[a].color = WHITE;
-      *maxFlow+=matrix->pixels[a].whiteWeight;
+      weightsSum+=matrix->pixels[a].whiteWeight;
+      counterWhite++;
+
     }
-    else{*maxFlow+=matrix->pixels[a].blackWeight;}
+    else{
+      weightsSum+=matrix->pixels[a].blackWeight;
+      counterBlack++;
+    }
   }
-  return *maxFlow;
+  if(counterBlack == 0 || counterWhite == 0) {
+    return weightsSum;
+  }
+  return *maxFlow + weightsSum;
 }
 
 int main() {
