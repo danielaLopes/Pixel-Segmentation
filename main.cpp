@@ -43,8 +43,8 @@ struct matrix{
 
 void printMatrix(struct matrix *matrix){
   int pixelCounter = 1;
-  for(size_t a = 0; a<matrix->m; a++) {
-    for(size_t b=0; b<matrix->n; b++){
+  for(int a = 0; a<matrix->m; a++) {
+    for(int b=0; b<matrix->n; b++){
       if(matrix->pixels[pixelCounter].color == BLACK){
         printf("P ");
       }
@@ -56,7 +56,7 @@ void printMatrix(struct matrix *matrix){
 }
 
 void saturateDirectEdges(struct matrix *matrix){
-  for(int a=1; a<matrix->pixels.size()-1; a++){
+  for(size_t a=1; a<matrix->pixels.size()-1; a++){
     int edgeIndex1 = matrix->pixels[a].edges[0];
     int edgeIndex2 = matrix->pixels[a].edges[1];
     int cf1 = matrix->edges[edgeIndex1].cf;
@@ -92,21 +92,27 @@ int BFS(struct matrix *matrix, int startNode) {
     }*/
     for(size_t i=0; i<matrix->pixels[currentNode].edges.size(); i++){
       struct edge e = matrix->edges[matrix->pixels[currentNode].edges[i]];
-      if(matrix->visitedPixels[e.destiny]==-1){ //check if a pixel has been visited
-        if(currentNode == e.origin && e.cf > 0){
-          matrix->visitedPixels[e.destiny]=currentNode;
-          matrix->flows[e.destiny] = matrix->pixels[currentNode].edges[i];
-          matrix->currentPathCapacity[e.destiny] = std::min(matrix->currentPathCapacity[currentNode], e.cf);
-          if(e.destiny == matrix->pixels.size()-1){
-            return matrix->currentPathCapacity[e.destiny];
+      if(currentNode==e.origin) {
+        if(matrix->visitedPixels[e.destiny]==-1){ //check if a pixel has been visited
+          if(e.cf > 0){
+            matrix->visitedPixels[e.destiny]=currentNode;
+            matrix->flows[e.destiny] = matrix->pixels[currentNode].edges[i];
+            matrix->currentPathCapacity[e.destiny] = std::min(matrix->currentPathCapacity[currentNode], e.cf);
+            if((size_t) e.destiny == matrix->pixels.size()-1){
+              return matrix->currentPathCapacity[e.destiny];
+            }
+            q.push(e.destiny);
           }
-          q.push(e.destiny);
         }
-        else if(currentNode == e.destiny && e.backwardsCF > 0){
-          matrix->visitedPixels[e.origin]=currentNode;
-          matrix->flows[e.origin] = matrix->pixels[currentNode].edges[i];
-          matrix->currentPathCapacity[e.origin] = std::min(matrix->currentPathCapacity[currentNode], e.backwardsCF);
-          q.push(e.origin);
+      }
+      else if(currentNode==e.destiny) {
+        if(matrix->visitedPixels[e.origin]==-1){
+          if(e.backwardsCF > 0){
+            matrix->visitedPixels[e.origin]=currentNode;
+            matrix->flows[e.origin] = matrix->pixels[currentNode].edges[i];
+            matrix->currentPathCapacity[e.origin] = std::min(matrix->currentPathCapacity[currentNode], e.backwardsCF);
+            q.push(e.origin);
+          }
         }
       }
     }
@@ -119,6 +125,7 @@ int edmondsKarp(struct matrix *matrix, int startNode, int* maxFlow) { //returns 
     int flow = BFS(matrix, startNode);
     //printf("bfs flow: %d\n", flow);
     int currentNode = matrix->pixels.size()-1;
+    //printf("Inicio do caminho no target: %d\n", currentNode);
     if(flow == 0){
       break;
     }
@@ -134,6 +141,7 @@ int edmondsKarp(struct matrix *matrix, int startNode, int* maxFlow) { //returns 
         matrix->edges[matrix->flows[currentNode]].cf -= flow;
         matrix->edges[matrix->flows[currentNode]].backwardsCF += flow;
       }
+      //printf("Fui para: %d\n", currentNode);
       currentNode = previousNode;
     }
   }
