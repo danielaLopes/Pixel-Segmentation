@@ -27,6 +27,8 @@ struct edge{
 };
 
 struct pixel{
+  int color;
+  int blackWeight, whiteWeight;
   std::vector<int> edges;
 };
 
@@ -40,11 +42,14 @@ struct matrix{
 };
 
 void printMatrix(struct matrix *matrix){
-  for(size_t a = 0; a<matrix->pixels.size(); a++) {
-    printf("%ld: ", a);
-    for(size_t b=0; b<matrix->pixels[a].edges.size(); b++){
-        //printf("%d ", edges[matrix->pixels[a].edges[b]].cf);
-        printf("%d ", matrix->edges[matrix->pixels[a].edges[b]].cf);
+  int pixelCounter = 1;
+  for(size_t a = 0; a<matrix->m; a++) {
+    for(size_t b=0; b<matrix->n; b++){
+      if(matrix->pixels[pixelCounter].color == BLACK){
+        printf("P ");
+      }
+      else { printf("C "); }
+      pixelCounter++;
     }
     printf("\n");
   }
@@ -103,24 +108,21 @@ int BFS(struct matrix *matrix, int startNode) {
           matrix->currentPathCapacity[e.origin] = std::min(matrix->currentPathCapacity[currentNode], e.backwardsCF);
           q.push(e.origin);
         }
-
       }
     }
   }
   return 0;
 }
 
-int edmondsKarp(struct matrix *matrix, int startNode) { //returns the maximum flow
-  int maxFlow = 0;
-  int counter = 0;
+int edmondsKarp(struct matrix *matrix, int startNode, int* maxFlow) { //returns the maximum flow
   while(true){
     int flow = BFS(matrix, startNode);
-    printf("bfs flow: %d\n", flow);
-    if(flow==0){
+    //printf("bfs flow: %d\n", flow);
+    int currentNode = matrix->pixels.size()-1;
+    if(flow == 0){
       break;
     }
-    maxFlow+=flow;
-    int currentNode = matrix->pixels.size()-1;
+    *maxFlow+=flow;
     while(currentNode != startNode){
       int previousNode = matrix->visitedPixels[currentNode];
       struct edge e = matrix->edges[matrix->flows[currentNode]];
@@ -134,10 +136,15 @@ int edmondsKarp(struct matrix *matrix, int startNode) { //returns the maximum fl
       }
       currentNode = previousNode;
     }
-        counter++;
   }
-  printf("maxflow: %d\n", maxFlow);
-  return maxFlow;
+  for(size_t a=1; a<matrix->visitedPixels.size()-1;a++){
+    if (matrix->visitedPixels[a] != -1){
+      matrix->pixels[a].color = WHITE;
+      *maxFlow+=matrix->pixels[a].whiteWeight;
+    }
+    else{*maxFlow+=matrix->pixels[a].blackWeight;}
+  }
+  return *maxFlow;
 }
 
 int main() {
@@ -145,7 +152,9 @@ int main() {
   scanf("%d %d", &(matrix.m), &(matrix.n));
   int aux;
   struct pixel target, source;
-
+  target.color = BLACK;
+  source.color = BLACK;
+  int maxFlow = 0;
   //reading black (primeiro plano) values
   int pixelCounter = 1;
   int edgeCounter = 0;
@@ -157,8 +166,10 @@ int main() {
     for(int b=0; b<matrix.n; b++){
       //add connections from each pixel to source
       struct pixel p;
+      p.color = BLACK;
       struct edge edge_aux;
       scanf("%d", &aux);
+      p.blackWeight = aux;
       p.edges.push_back(edgeCounter);
       matrix.pixels.push_back(p);
       //initialize auxiliar vectors
@@ -186,6 +197,7 @@ int main() {
     for(int b=0; b<matrix.n; b++){
       struct edge edge_aux;
       scanf("%d", &aux);
+      matrix.pixels[pixelCounter].whiteWeight = aux;
       matrix.pixels[pixelCounter].edges.push_back(edgeCounter);
       //add connections from target for each vertex
       edge_aux.origin = pixelCounter++; //corresponds to target pixel
@@ -240,8 +252,8 @@ int main() {
       }
     }
   }
-  //saturateDirectEdges(&matrix);
-  //printMatrix(&matrix);
-  edmondsKarp(&matrix, 0);
+  saturateDirectEdges(&matrix);
+  printf("%d\n\n", edmondsKarp(&matrix, 0, &maxFlow));
+  printMatrix(&matrix);
   return 0;
 }
