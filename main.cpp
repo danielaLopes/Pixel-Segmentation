@@ -87,9 +87,6 @@ int BFS(struct matrix *matrix, int startNode) {
     int currentNode = q.front();
     q.pop();
     //the target was found which means a path has been founded and saved
-    /*if(currentNode == matrix->pixels.size()-1){
-      return currentPathCapacity[matrix->pixels.size()-1];
-    }*/
     for(size_t i=0; i<matrix->pixels[currentNode].edges.size(); i++){
       struct edge e = matrix->edges[matrix->pixels[currentNode].edges[i]];
       if(currentNode==e.origin) {
@@ -123,9 +120,7 @@ int BFS(struct matrix *matrix, int startNode) {
 int edmondsKarp(struct matrix *matrix, int startNode, int* maxFlow) { //returns the maximum flow
   while(true){
     int flow = BFS(matrix, startNode);
-    //printf("bfs flow: %d\n", flow);
     int currentNode = matrix->pixels.size()-1;
-    //printf("Inicio do caminho no target: %d\n", currentNode);
     if(flow == 0){
       break;
     }
@@ -141,7 +136,6 @@ int edmondsKarp(struct matrix *matrix, int startNode, int* maxFlow) { //returns 
         matrix->edges[matrix->flows[currentNode]].cf -= flow;
         matrix->edges[matrix->flows[currentNode]].backwardsCF += flow;
       }
-      //printf("Fui para: %d\n", currentNode);
       currentNode = previousNode;
     }
   }
@@ -256,7 +250,7 @@ int main() {
         for(int j=0; j<matrix.n; j++){
           struct edge edge_aux;
 
-          //if pixel in the first line
+          //if pixel is in the first line
           if(i!=matrix.m-1){
             edge_aux.origin = pixelCounter;
             edge_aux.destiny = pixelCounter + matrix.n;
